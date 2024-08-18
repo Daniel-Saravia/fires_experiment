@@ -1,0 +1,51 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Environment variables
+.env
+
+# Virtual environments
+venv/
+env/
+*.env
+
+# Miniconda installer files
+Miniconda3-latest-Linux-x86_64.sh*
+Miniconda3-latest-Linux-x86_64.sh.1*
+
+# SQLite database files
+*.db
+
+# Flask and SQLAlchemy specific
+instance/
+web_scraper/
+
+# Logs and local database
+*.log
+*.sqlite3
+
+# Pytest cache and coverage
+.pytest_cache/
+coverage/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# macOS specific
+.DS_Store
+
+# Environment files
+environment.yml
+
+# Ignore your local database files
+data.db
+example.db
+
+# Ignore the compiled Python files
+*.pyc
+
