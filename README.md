@@ -1,15 +1,21 @@
 # Web Scraper Project
 
-This project is a simple web scraper that scrapes a specific website every ten minutes and stores the scraped data in a SQLite database. The project includes a backend API using Flask and can be hosted on a local machine.
+This project is a Python-based web scraper that periodically scrapes a specific website to collect data and stores it in a SQLite database. The scraper is configured to run using Selenium with ChromeDriver, managed automatically by `webdriver-manager`, making it easy to deploy on different machines.
+
+## Features
+
+- **Automated Data Collection**: The scraper automatically extracts data from a dynamically loaded website and stores it in a relational SQLite database.
+- **Portability**: The project is fully portable across different machines, with dependencies managed through Conda and WebDriver handled by `webdriver-manager`.
+- **Database Storage**: Data is stored in an SQLite database, allowing easy querying and analysis.
 
 ## Environment Setup
 
-This project uses Conda for environment management. To set up the environment, use the provided `environment.yml` file.
+This project uses Conda for environment management. All dependencies, including Selenium and `webdriver-manager`, are specified in the `environment.yml` file.
 
 ### Prerequisites
 
 - [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or [Anaconda](https://www.anaconda.com/products/distribution)
-- Python 3.12
+- Google Chrome (or Chromium) installed
 
 ### Setting Up the Environment
 
@@ -27,41 +33,58 @@ This project uses Conda for environment management. To set up the environment, u
     conda activate web_scraper
     ```
 
-### Running the Web Scraper
+3. **Verify the installation:**
 
-The web scraper is designed to run every 10 minutes and stores the scraped data in a SQLite database.
+    Ensure that all dependencies are installed correctly by running:
 
-1. **Edit the `scraper.py` file:**
-   - Replace `URL_OF_THE_WEBSITE` with the actual URL of the website you want to scrape.
+    ```bash
+    conda list
+    ```
 
-2. **Run the scraper:**
+## Running the Web Scraper
+
+The web scraper uses Selenium to interact with the website and BeautifulSoup to parse the HTML content.
+
+1. **Run the scraper:**
 
     ```bash
     python scraper.py
     ```
 
-### Project Structure
+    The scraper will:
+    - Open the specified website in a headless Chrome browser.
+    - Extract the relevant data from the webpage.
+    - Store the extracted data in the `data.db` SQLite database.
 
-- **`scraper.py`**: The main script that scrapes the website and stores the data.
-- **`environment.yml`**: The Conda environment configuration file.
-- **`data.db`**: The SQLite database file (generated after running the scraper).
+2. **Check the database:**
 
-### Requirements
+    You can inspect the stored data using SQLite's command-line interface:
 
-- Python 3.12
-- Flask
-- SQLAlchemy
-- BeautifulSoup4
-- Requests
-- Schedule (installed via `pip`)
+    ```bash
+    sqlite3 data.db
+    ```
 
-### Future Improvements
+    Then run SQL queries, such as:
 
-- Add a frontend to visualize the scraped data.
-- Implement error handling for network issues and data inconsistencies.
-- Extend the scraper to handle more complex websites.
+    ```sql
+    SELECT * FROM events;
+    ```
 
-### License
+## Deployment
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+To deploy this scraper on another machine:
 
+1. **Copy the project directory to the target machine.**
+2. **Ensure Miniconda or Anaconda is installed.**
+3. **Set up the environment as described in the "Setting Up the Environment" section.**
+4. **Run the scraper as described above.**
+
+## Future Improvements
+
+- **Automated Scheduling**: Use `cron` jobs or another scheduling tool to run the scraper periodically.
+- **Error Handling**: Enhance the script with more robust error handling and logging.
+- **Data Visualization**: Develop a front-end application to visualize the collected data.
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for more details.
