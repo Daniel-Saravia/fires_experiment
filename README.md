@@ -30,6 +30,7 @@ This project uses Conda for environment management. All dependencies, including 
 
     ```bash
     conda env create -f environment.yml
+    conda env update -f environment.yml
     conda activate web_scraper
     ```
 

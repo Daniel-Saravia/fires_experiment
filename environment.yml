@@ -10,6 +10,5 @@ dependencies:
   - pip
   - pip:
     - schedule
-    - selenium
-    - webdriver-manager
+    - selenium>=4.6.0
 
