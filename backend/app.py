@@ -8,7 +8,16 @@ session = Session()
 
 @app.route('/events', methods=['GET'])
 def get_events():
+    """
+    Endpoint to retrieve all events from the database.
+    
+    Returns:
+        JSON: A list of events with title, location, datetime, channel, and status.
+    """
+    # Query all events from the database
     events = session.query(Event).all()
+
+    # Convert the events into a list of dictionaries
     events_list = [
         {
             'title': event.title,
@@ -19,7 +28,11 @@ def get_events():
         }
         for event in events
     ]
+
+    # Return the events as JSON
     return jsonify(events_list)
 
 if __name__ == '__main__':
+    # Run the Flask application in debug mode
     app.run(debug=True)
+
