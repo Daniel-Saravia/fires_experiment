@@ -1,89 +1,22 @@
-"""
-Web Scraper for Public Incident Dashboard
-
-This script is designed to scrape data from a public incident dashboard using Selenium and BeautifulSoup.
-The scraped data is then stored in a SQLite database for later retrieval and analysis.
-
-Features:
-- Uses Selenium to automate a Chrome browser and load JavaScript-rendered content.
-- Parses HTML content with BeautifulSoup to extract specific data from tables.
-- Stores extracted data in a relational SQLite database using SQLAlchemy ORM.
-
-Requirements:
-- Google Chrome must be installed on the system.
-- Python packages: selenium, webdriver-manager, beautifulsoup4, sqlalchemy
-
-Setup:
-1. Install dependencies using Conda:
-    conda env create -f environment.yml
-    conda activate web_scraper
-
-2. Run the script:
-    python scraper.py
-
-Environment:
-- The environment.yml file should include all necessary Python packages, and ChromeDriver is managed automatically by WebDriver Manager.
-
-Usage:
-- The script will open the specified webpage, wait for JavaScript to load, and then scrape data from tables within div elements.
-- Extracted data is stored in a SQLite database named 'data.db'.
-- Each run of the script will insert new data into the database.
-
-Database Schema:
-- Table: events
-  - id (Integer): Primary key
-  - title (String): Title of the event
-  - location (String): Location of the event
-  - datetime (DateTime): Date and time of the event
-  - channel (String): Communication channel associated with the event
-  - status (String): Status of the event
-
-Author: Your Name
-Date: YYYY-MM-DD
-"""
-
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
-from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
 import time
+import threading
 
-# Set Chrome options to avoid extra windows and suppress the automation info bar
-chrome_options = Options()
-chrome_options.add_argument("--disable-infobars")
-chrome_options.add_argument("--disable-extensions")
-chrome_options.add_argument("--headless")  # Run Chrome in headless mode (no UI)
-chrome_options.add_argument("--disable-gpu")
-chrome_options.add_argument("--window-size=1920x1080")
+# Import the database setup and Event model from database.py
+from database import Session, Event
 
-# Initialize the Chrome WebDriver using the defined options
-driver = webdriver.Chrome(options=chrome_options)
-
-# Database setup
-DATABASE_URL = "sqlite:///data.db"
-Base = declarative_base()
-
-class Event(Base):
-    __tablename__ = 'events'
-    id = Column(Integer, primary_key=True)
-    title = Column(String)
-    location = Column(String)
-    datetime = Column(DateTime)
-    channel = Column(String)
-    status = Column(String)
-
-engine = create_engine(DATABASE_URL)
-Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
-session = Session()
+# Initialize the Chrome WebDriver with default options
+driver = webdriver.Chrome()
 
 def scrape_website():
+    session = Session()  # Start a session to interact with the database
     url = 'https://mapportal.phoenix.gov/pfd/apps/dashboards/60bc91a9f225469fb0194b9e9ff623e2'
     driver.get(url)
-    time.sleep(5)  # Wait for JavaScript to load content
+    time.sleep(9)  # Wait for JavaScript to load content
 
+    # Parse the page source with BeautifulSoup
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     external_html_divs = soup.find_all('div', class_='external-html')
 
@@ -122,8 +55,18 @@ def scrape_website():
             print(f"Inserted event: {title} at {location} into the database.")
 
     print("Scraping completed successfully.")
+    session.close()  # Close the session
+
+def start_scraping_interval(interval=600):
+    """
+    Starts the scraping process immediately and continues to scrape every `interval` seconds.
+    
+    :param interval: Time in seconds between each scrape (default is 600 seconds, or 10 minutes).
+    """
+    while True:
+        scrape_website()
+        time.sleep(interval)
 
 if __name__ == '__main__':
-    scrape_website()
+    start_scraping_interval()  # Start scraping immediately when running this script directly
     driver.quit()  # Ensure the browser is closed after scraping
-

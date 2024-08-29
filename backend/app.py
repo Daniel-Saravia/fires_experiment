@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from sqlalchemy.orm import sessionmaker
-from scraper import engine, Event
+from database import engine, Event
 
 app = Flask(__name__)
 Session = sessionmaker(bind=engine)
