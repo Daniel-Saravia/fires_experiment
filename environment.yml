@@ -11,4 +11,5 @@ dependencies:
   - pip:
     - schedule
     - selenium>=4.6.0
+    - colorama
 
