@@ -1,6 +1,7 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from database import Event
+from colorama import Fore, Style
 
 DATABASE_URL = "sqlite:///data.db"
 engine = create_engine(DATABASE_URL)
@@ -26,7 +27,12 @@ def is_duplicate_event(event_data):
     ).first()
     
     if duplicate_event:
-        print(f"Duplicate event found: {event_data}")
+        print(f"{Fore.YELLOW}[Duplicate Event Found]{Style.RESET_ALL}")
+        print(f"  Title   : {event_data['title']}")
+        print(f"  Location: {event_data['location']}")
+        print(f"  Date/Time: {event_data['datetime']}")
+        print(f"  Channel : {event_data['channel']}")
+        print(f"  Status  : {event_data['status']}\n")
         return True
     return False
 
@@ -47,9 +53,16 @@ def insert_event_if_not_duplicate(event_data):
         )
         session.add(new_event)
         session.commit()
-        print(f"Inserted event: {event_data['title']} at {event_data['location']} into the database.")
+        print(f"{Fore.GREEN}[Inserted Event]{Style.RESET_ALL}")
+        print(f"  Title   : {event_data['title']}")
+        print(f"  Location: {event_data['location']}")
+        print(f"  Date/Time: {event_data['datetime']}")
+        print(f"  Channel : {event_data['channel']}")
+        print(f"  Status  : {event_data['status']}\n")
     else:
-        print(f"Skipped inserting duplicate event: {event_data['title']} at {event_data['location']}.")
+        print(f"{Fore.CYAN}[Skipped Duplicate]{Style.RESET_ALL}")
+        print(f"  Title   : {event_data['title']}")
+        print(f"  Location: {event_data['location']}\n")
 
 if __name__ == "__main__":
     # Example event data to check and insert if not a duplicate
@@ -64,3 +77,4 @@ if __name__ == "__main__":
     insert_event_if_not_duplicate(example_event_data)
 
     session.close()
+
