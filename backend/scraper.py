@@ -2,16 +2,14 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from datetime import datetime
 import time
-import threading
 
-# Import the database setup and Event model from database.py
-from database import Session, Event
+# Import the insert function from check_duplicates.py
+from check_duplicates import insert_event_if_not_duplicate
 
 # Initialize the Chrome WebDriver with default options
 driver = webdriver.Chrome()
 
 def scrape_website():
-    session = Session()  # Start a session to interact with the database
     url = 'https://mapportal.phoenix.gov/pfd/apps/dashboards/60bc91a9f225469fb0194b9e9ff623e2'
     driver.get(url)
     time.sleep(9)  # Wait for JavaScript to load content
@@ -48,14 +46,19 @@ def scrape_website():
                 print(f"Date parsing failed for string: {datetime_str}")
                 continue
 
-            event = Event(title=title, location=location, datetime=event_datetime, channel=channel, status=status)
-            session.add(event)
-            session.commit()
+            # Create a dictionary for the event data
+            event_data = {
+                "title": title,
+                "location": location,
+                "datetime": event_datetime,
+                "channel": channel,
+                "status": status
+            }
 
-            print(f"Inserted event: {title} at {location} into the database.")
+            # Insert the event if it's not a duplicate
+            insert_event_if_not_duplicate(event_data)
 
     print("Scraping completed successfully.")
-    session.close()  # Close the session
 
 def start_scraping_interval(interval=600):
     """
@@ -68,5 +71,6 @@ def start_scraping_interval(interval=600):
         time.sleep(interval)
 
 if __name__ == '__main__':
-    start_scraping_interval()  # Start scraping immediately when running this script directly
+    scrape_website()  # Initial scrape when script is run
+    start_scraping_interval()  # Continue scraping every 10 minutes
     driver.quit()  # Ensure the browser is closed after scraping
