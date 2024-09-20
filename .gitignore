@@ -10,6 +10,8 @@ __pycache__/
 .env
 
 # Virtual environments
+# fires is the main vitualenv
+fires/ 
 venv/
 env/
 *.env
