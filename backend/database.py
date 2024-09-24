@@ -1,19 +1,41 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
-from sqlalchemy.orm import declarative_base, sessionmaker
+import boto3
+from botocore.exceptions import ClientError
+from datetime import datetime
+import os
 
-# Database setup
-DATABASE_URL = "sqlite:///data.db"
-Base = declarative_base()
+# DynamoDB setup
+dynamodb = boto3.resource('dynamodb', region_name='your-region')
 
-class Event(Base):
-    __tablename__ = 'events'
-    id = Column(Integer, primary_key=True)
-    title = Column(String)
-    location = Column(String)
-    datetime = Column(DateTime)
-    channel = Column(String)
-    status = Column(String)
+# Get or create the DynamoDB table
+def get_events_table():
+    table_name = 'Events'
+    try:
+        table = dynamodb.Table(table_name)
+        # Try to describe the table to check if it exists
+        table.load()
+        print(f"Table {table_name} already exists.")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            # Create the table
+            print(f"Creating table {table_name}...")
+            table = dynamodb.create_table(
+                TableName=table_name,
+                KeySchema=[
+                    {'AttributeName': 'id', 'KeyType': 'HASH'},  # Partition key
+                ],
+                AttributeDefinitions=[
+                    {'AttributeName': 'id', 'AttributeType': 'S'},
+                ],
+                ProvisionedThroughput={
+                    'ReadCapacityUnits': 5,
+                    'WriteCapacityUnits': 5,
+                }
+            )
+            # Wait until the table exists
+            table.meta.client.get_waiter('table_exists').wait(TableName=table_name)
+            print(f"Table {table_name} created.")
+        else:
+            raise
+    return table
 
-engine = create_engine(DATABASE_URL)
-Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
+events_table = get_events_table()
