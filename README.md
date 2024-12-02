@@ -36,4 +36,5 @@
     sqlite3 data.db
     SELECT \* FROM events;
     .exit
+    come back
     ```
