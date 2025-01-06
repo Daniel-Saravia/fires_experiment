@@ -37,4 +37,4 @@
     SELECT \* FROM events;
     .exit
     come back
-    ```
+    ``` 
