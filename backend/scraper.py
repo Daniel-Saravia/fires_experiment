@@ -1,5 +1,8 @@
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -22,6 +25,8 @@ class OptimizedFireScraper:
         self.wait = None
         self.url = 'https://mapportal.phoenix.gov/pfd/apps/dashboards/60bc91a9f225469fb0194b9e9ff623e2'
         self.max_retries = 3
+        self.browser_preference = os.getenv("FIRE_SCRAPER_BROWSER", "firefox").lower()
+        self.active_browser = None
         
     def _get_chrome_options(self):
         """Configure Chrome options for maximum performance"""
@@ -86,25 +91,62 @@ class OptimizedFireScraper:
         
         return options
         
+    def _get_firefox_options(self):
+        """Configure Firefox options for headless scraping"""
+        options = FirefoxOptions()
+        options.add_argument("-headless")
+        options.set_preference("permissions.default.image", 2)
+        options.set_preference("dom.ipc.processCount", 1)
+        options.set_preference("dom.max_script_run_time", 20)
+        options.set_preference("browser.cache.disk.enable", False)
+        options.set_preference("browser.cache.memory.enable", False)
+        options.set_preference("browser.cache.offline.enable", False)
+        options.set_preference("network.http.use-cache", False)
+        options.set_preference("privacy.trackingprotection.enabled", True)
+        options.set_preference("media.autoplay.default", 0)
+        options.set_preference("dom.webnotifications.enabled", False)
+        return options
+
     def _initialize_driver(self):
-        """Initialize the Chrome driver with optimized settings"""
-        try:
-            options = self._get_chrome_options()
-            self.driver = webdriver.Chrome(options=options)
-            
-            # Set timeouts
-            self.driver.implicitly_wait(10)
-            self.driver.set_page_load_timeout(30)
-            
-            # Initialize WebDriverWait
-            self.wait = WebDriverWait(self.driver, 15)
-            
-            logger.info("Chrome driver initialized successfully")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to initialize Chrome driver: {e}")
-            return False
+        """Initialize a web driver with optimized settings"""
+        browsers_to_try = []
+
+        if self.browser_preference in ("chrome", "firefox"):
+            browsers_to_try.append(self.browser_preference)
+        else:
+            logger.warning(f"Unknown browser preference '{self.browser_preference}', defaulting to Firefox")
+            browsers_to_try.append("firefox")
+
+        if "firefox" not in browsers_to_try:
+            browsers_to_try.append("firefox")
+
+        for browser in browsers_to_try:
+            try:
+                if browser == "chrome":
+                    options = self._get_chrome_options()
+                    self.driver = webdriver.Chrome(options=options)
+                elif browser == "firefox":
+                    options = self._get_firefox_options()
+                    service = FirefoxService(log_path=os.devnull)
+                    self.driver = webdriver.Firefox(options=options, service=service)
+                else:
+                    continue
+
+                self.driver.implicitly_wait(10)
+                self.driver.set_page_load_timeout(30)
+                self.wait = WebDriverWait(self.driver, 15)
+                self.active_browser = browser
+
+                logger.info(f"{browser.capitalize()} driver initialized successfully")
+                return True
+
+            except Exception as e:
+                logger.error(f"Failed to initialize {browser} driver: {e}")
+                self.driver = None
+                self.wait = None
+                continue
+
+        return False
     
     def _wait_for_content_load(self):
         """Wait for the specific content to load instead of arbitrary sleep"""
@@ -257,6 +299,7 @@ class OptimizedFireScraper:
         
         self.driver = None
         self.wait = None
+        self.active_browser = None
         time.sleep(1)  # Brief pause before restarting
         
     def start_scraping_interval(self, interval=600):
@@ -293,12 +336,16 @@ class OptimizedFireScraper:
     
     def cleanup(self):
         """Clean up resources"""
+        browser = self.active_browser or "web"
         if self.driver:
             try:
                 self.driver.quit()
-                logger.info("Chrome driver closed successfully")
+                logger.info(f"{browser.capitalize()} driver closed successfully")
             except Exception as e:
                 logger.warning(f"Error closing driver: {e}")
+        self.driver = None
+        self.wait = None
+        self.active_browser = None
 
 # Global scraper instance
 scraper = OptimizedFireScraper()
