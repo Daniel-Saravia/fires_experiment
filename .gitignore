@@ -1,53 +1,62 @@
-# Byte-compiled / optimized / DLL files
+# General
+.DS_Store
+Thumbs.db
+*.log
+
+# Python artifacts
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
+*.pyc
 *.so
-
-# Environment variables
-.env
+.pytest_cache/
+.ipynb_checkpoints/
 
 # Virtual environments
-# fires is the main vitualenv
-fires/ 
+fires/
 venv/
 env/
+.venv/
+
+# Environment + secrets
+.env
+.env.*
 *.env
-
-# Miniconda installer files
-Miniconda3-latest-Linux-x86_64.sh*
-Miniconda3-latest-Linux-x86_64.sh.1*
-
-# SQLite database files
-*.db
-
-# Flask and SQLAlchemy specific
-instance/
-web_scraper/
-
-# Logs and local database
-*.log
-*.sqlite3
-
-# Pytest cache and coverage
-.pytest_cache/
-coverage/
-
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints
-
-# macOS specific
-.DS_Store
-
-# Environment files
 environment.yml
 
-# Ignore your local database files
+# Databases & storage
+*.db
+*.sqlite
+*.sqlite3
 data.db
 example.db
 
-# Ignore the compiled Python files
-*.pyc
+# Node / Next.js
+node_modules/
+**/.next/
+**/out/
+**/.turbo/
+**/.swc/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
+web/node_modules/
+web/.next/
+web/out/
+web/.turbo/
+web/.swc/
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+web/pnpm-debug.log*
 
+# Prisma generated assets
+web/src/generated/
+
+# Selenium / scraper scratch
+instance/
+web_scraper/
+
+# Installers / binaries
+Miniconda3-latest-Linux-x86_64.sh*
